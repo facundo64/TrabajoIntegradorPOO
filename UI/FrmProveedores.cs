@@ -10,8 +10,7 @@ using System.Windows.Forms;
 
 using BE;
 using BLL;
-using System;
-using System.Windows.Forms;
+using INFRA;
 
 namespace UI
 {
@@ -30,6 +29,13 @@ namespace UI
             dgvProveedores.ReadOnly = true;
             dgvProveedores.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
+            CargarGrilla();
+        }
+
+        // Agrego el handler de Load que está registrado en el Designer
+        private void FrmProveedores_Load(object sender, EventArgs e)
+        {
+            // Ya se llama en el constructor, pero mantener por consistencia del evento
             CargarGrilla();
         }
 
@@ -58,7 +64,25 @@ namespace UI
             {
                 if (string.IsNullOrWhiteSpace(txtRazonSocial.Text))
                 {
-                    MessageBox.Show("La Razón Social es obligatoria.");
+                    MessageBox.Show("La Razón Social es obligatoria.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtCUIT.Text) && !RegexHelper.ValidarCUIT(txtCUIT.Text))
+                {
+                    MessageBox.Show("El formato del CUIT no es válido. Use el formato XX-XXXXXXXX-X", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !RegexHelper.ValidarEmail(txtEmail.Text))
+                {
+                    MessageBox.Show("El formato del email no es válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtTelefono.Text) && !RegexHelper.ValidarTelefono(txtTelefono.Text))
+                {
+                    MessageBox.Show("El formato del teléfono no es válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -70,18 +94,14 @@ namespace UI
 
                 if (servicio.Agregar(p))
                 {
-                    MessageBox.Show("Proveedor agregado con éxito.");
+                    MessageBox.Show("Proveedor agregado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
-                }
-                else
-                {
-                    MessageBox.Show("No se pudo agregar el proveedor. Verifique los datos.");
                 }
             }
             catch (Exception ex) 
             { 
-                MessageBox.Show("Error al agregar: " + ex.Message + "\n\n" + ex.InnerException?.Message); 
+                MessageBox.Show("Error al agregar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
             }
         }
 
@@ -89,12 +109,36 @@ namespace UI
         {
             if (idSeleccionado == 0)
             {
-                MessageBox.Show("Seleccione un proveedor de la grilla.");
+                MessageBox.Show("Seleccione un proveedor de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
+                if (string.IsNullOrWhiteSpace(txtRazonSocial.Text))
+                {
+                    MessageBox.Show("La Razón Social es obligatoria.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtCUIT.Text) && !RegexHelper.ValidarCUIT(txtCUIT.Text))
+                {
+                    MessageBox.Show("El formato del CUIT no es válido. Use el formato XX-XXXXXXXX-X", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !RegexHelper.ValidarEmail(txtEmail.Text))
+                {
+                    MessageBox.Show("El formato del email no es válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtTelefono.Text) && !RegexHelper.ValidarTelefono(txtTelefono.Text))
+                {
+                    MessageBox.Show("El formato del teléfono no es válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 Proveedor p = new Proveedor();
                 p.Id = idSeleccionado;
                 p.RazonSocial = txtRazonSocial.Text;
@@ -104,18 +148,14 @@ namespace UI
 
                 if (servicio.Modificar(p))
                 {
-                    MessageBox.Show("Proveedor modificado.");
+                    MessageBox.Show("Proveedor modificado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
-                }
-                else
-                {
-                    MessageBox.Show("No se pudo modificar el proveedor.");
                 }
             }
             catch (Exception ex) 
             { 
-                MessageBox.Show("Error al modificar: " + ex.Message + "\n\n" + ex.InnerException?.Message); 
+                MessageBox.Show("Error al modificar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
             }
         }
 
@@ -123,20 +163,25 @@ namespace UI
         {
             if (idSeleccionado == 0)
             {
-                MessageBox.Show("Seleccione un proveedor de la grilla.");
+                MessageBox.Show("Seleccione un proveedor de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (MessageBox.Show("¿Seguro desea borrar este proveedor?", "Confirmar", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show("¿Está seguro de eliminar este proveedor?", "Confirmar eliminación", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                if (servicio.Borrar(idSeleccionado))
+                try
                 {
-                    CargarGrilla();
-                    Limpiar();
+                    if (servicio.Borrar(idSeleccionado))
+                    {
+                        MessageBox.Show("Proveedor eliminado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        CargarGrilla();
+                        Limpiar();
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show("No se puede borrar. Posiblemente tenga productos asociados.");
+                    MessageBox.Show("No se puede eliminar. El proveedor tiene productos asociados.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

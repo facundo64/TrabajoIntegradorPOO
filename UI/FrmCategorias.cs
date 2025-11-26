@@ -9,8 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using BE;
-using BLL;
 
 namespace UI
 {
@@ -52,25 +50,45 @@ namespace UI
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(txtDescripcion.Text))
+                {
+                    MessageBox.Show("La descripción es obligatoria.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 Categoria c = new Categoria();
                 c.Descripcion = txtDescripcion.Text;
                 c.Activa = chkActiva.Checked;
 
                 if (servicio.Agregar(c))
                 {
-                    MessageBox.Show("Categoría creada.");
+                    MessageBox.Show("Categoría agregada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
                 }
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show("Error al agregar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
+            }
         }
 
         private void btnModificar_Click(object sender, EventArgs e)
         {
-            if (idSeleccionado == 0) return;
+            if (idSeleccionado == 0)
+            {
+                MessageBox.Show("Seleccione una categoría de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
+                if (string.IsNullOrWhiteSpace(txtDescripcion.Text))
+                {
+                    MessageBox.Show("La descripción es obligatoria.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 Categoria c = new Categoria();
                 c.Id = idSeleccionado;
                 c.Descripcion = txtDescripcion.Text;
@@ -78,22 +96,41 @@ namespace UI
 
                 if (servicio.Modificar(c))
                 {
-                    MessageBox.Show("Categoría modificada.");
+                    MessageBox.Show("Categoría modificada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
                 }
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) 
+            { 
+                MessageBox.Show("Error al modificar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); 
+            }
         }
 
         private void btnBorrar_Click(object sender, EventArgs e)
         {
-            if (idSeleccionado == 0) return;
-            if (MessageBox.Show("¿Borrar?", "Alerta", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (idSeleccionado == 0)
             {
-                servicio.Borrar(idSeleccionado);
-                CargarGrilla();
-                Limpiar();
+                MessageBox.Show("Seleccione una categoría de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (MessageBox.Show("¿Está seguro de eliminar esta categoría?", "Confirmar eliminación", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                try
+                {
+                    if (servicio.Borrar(idSeleccionado))
+                    {
+                        MessageBox.Show("Categoría eliminada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        CargarGrilla();
+                        Limpiar();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se puede eliminar. La categoría tiene productos asociados.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using BLL;
 using BE;
+using INFRA;
 
 namespace UI
 {
@@ -49,7 +50,10 @@ namespace UI
                 cmbProveedor.DisplayMember = "RazonSocial";
                 cmbProveedor.ValueMember = "Id";
             }
-            catch (Exception) { /* Ignoramos errores de carga de combos por ahora */ }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar datos: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void CargarGrilla()
@@ -81,14 +85,32 @@ namespace UI
             {
                 if (idSeleccionado == 0)
                 {
-                    MessageBox.Show("Por favor, seleccione un producto de la grilla para modificar.");
+                    MessageBox.Show("Seleccione un producto de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(txtNombre.Text))
+                {
+                    MessageBox.Show("El nombre del producto es obligatorio.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!RegexHelper.ValidarNumeroPositivo(txtPrecio.Text))
+                {
+                    MessageBox.Show("Ingrese un precio válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!RegexHelper.ValidarNumeroPositivo(txtStock.Text))
+                {
+                    MessageBox.Show("Ingrese un stock válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 Producto p = new Producto();
                 p.Id = idSeleccionado; // ¡IMPORTANTE! Pasamos el ID que guardamos al hacer clic
                 p.Nombre = txtNombre.Text;
-                p.Precio = Convert.ToDecimal(txtPrecio.Text);
+                p.Precio = Convert.ToDecimal(txtPrecio.Text.Replace(',', '.'));
                 p.Stock = Convert.ToInt32(txtStock.Text);
                 p.Activo = true; // O lo que corresponda
 
@@ -97,14 +119,14 @@ namespace UI
 
                 if (servicioProducto.Modificar(p))
                 {
-                    MessageBox.Show("Producto modificado con éxito.");
+                    MessageBox.Show("Producto modificado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al modificar: " + ex.Message);
+                MessageBox.Show("Error al modificar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -139,15 +161,27 @@ namespace UI
             try
             {
                 // Validacion simple para que no explote si está vacío
-                if (string.IsNullOrWhiteSpace(txtNombre.Text) || string.IsNullOrWhiteSpace(txtPrecio.Text))
+                if (string.IsNullOrWhiteSpace(txtNombre.Text))
                 {
-                    MessageBox.Show("Complete los datos obligatorios.");
+                    MessageBox.Show("El nombre del producto es obligatorio.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!RegexHelper.ValidarNumeroPositivo(txtPrecio.Text))
+                {
+                    MessageBox.Show("Ingrese un precio válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!RegexHelper.ValidarNumeroPositivo(txtStock.Text))
+                {
+                    MessageBox.Show("Ingrese un stock válido.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 Producto p = new Producto();
                 p.Nombre = txtNombre.Text;
-                p.Precio = Convert.ToDecimal(txtPrecio.Text);
+                p.Precio = Convert.ToDecimal(txtPrecio.Text.Replace(',', '.'));
                 p.Stock = Convert.ToInt32(txtStock.Text);
                 p.Activo = true;
                 p.FechaAlta = DateTime.Now;
@@ -158,35 +192,44 @@ namespace UI
 
                 if (servicioProducto.Agregar(p))
                 {
-                    MessageBox.Show("Producto agregado correctamente.");
+                    MessageBox.Show("Producto agregado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     CargarGrilla();
                     Limpiar();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al agregar: " + ex.Message);
+                MessageBox.Show("Error al agregar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnBorrar_Click_1(object sender, EventArgs e)
         {
-            if (dgvProductos.SelectedRows.Count > 0)
+            try
             {
+                if (dgvProductos.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Seleccione un producto de la grilla.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 Producto seleccionado = (Producto)dgvProductos.SelectedRows[0].DataBoundItem;
 
-                if (MessageBox.Show("¿Seguro desea borrar el producto " + seleccionado.Nombre + "?", "Alerta", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                if (MessageBox.Show($"¿Está seguro de eliminar el producto '{seleccionado.Nombre}'?", 
+                    "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    servicioProducto.Borrar(seleccionado.Id);
-                    CargarGrilla();
-                    Limpiar();
+                    if (servicioProducto.Borrar(seleccionado.Id))
+                    {
+                        MessageBox.Show("Producto eliminado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        CargarGrilla();
+                        Limpiar();
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Seleccione un producto de la grilla");
+                MessageBox.Show("Error al eliminar: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
     }
 }
