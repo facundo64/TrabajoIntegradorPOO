@@ -12,6 +12,25 @@ namespace UI
 {
     public partial class FrmPrincipal : Form
     {
+
+        private void AbrirFormulario<T>() where T : Form, new()
+        {
+            foreach (Form f in this.MdiChildren)
+            {
+                if (f.GetType() == typeof(T))
+                {
+                    f.BringToFront();
+                    return;
+                }
+                f.Close();
+            }
+            T form = new T();
+            form.MdiParent = this;
+            form.Show();
+        }
+
+        //metodo singelton,me lo recomendo gpt
+
         public FrmPrincipal()
         {
             InitializeComponent();
@@ -24,16 +43,22 @@ namespace UI
 
         private void productosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProductos frm = new FrmProductos();
-            frm.MdiParent = this;
-            frm.Show();
+            AbrirFormulario<FrmProductos>();
         }
 
         private void categoriasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmCategorias frm = new FrmCategorias();
-            frm.MdiParent = this;
-            frm.Show();
+            AbrirFormulario<FrmCategorias>();
+        }
+
+        private void proveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AbrirFormulario<FrmProveedores>();
+        }
+
+        private void FrmPrincipal_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -10,7 +10,7 @@ namespace BE
     {
         public int Id { get; set; }
         public string NombreUsuario { get; set; }
-        public byte[] PasswordHash { get; set; } // contraseña para el hash
+        public byte[] PasswordHash { get; set; }
         public string Email { get; set; }
         public string Rol { get; set; }
         public DateTime FechaAlta { get; set; }

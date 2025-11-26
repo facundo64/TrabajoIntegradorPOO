@@ -8,6 +8,5 @@ namespace INFRA
 {
     internal class ExceptionManager
     {
-        //vacio
     }
 }

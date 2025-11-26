@@ -10,21 +10,16 @@ namespace INFRA
 {
     public class SQLHelper
     {
-        // cadena de coneccion en una variable
         private string stringConexion = @"Data Source=.\SQLEXPRESS;Initial Catalog=ExamenLUG2025DB;Integrated Security=True;TrustServerCertificate=True;";
 
-       
         public DataTable EjecutarConsulta(string consulta, SqlParameter[] parametros = null)
         {
-         
             DataTable tabla = new DataTable();
 
-      
             using (SqlConnection conexion = new SqlConnection(stringConexion))
             {
                 using (SqlCommand comando = new SqlCommand(consulta, conexion))
                 {
-                    
                     if (parametros != null)
                     {
                         comando.Parameters.AddRange(parametros);
@@ -37,7 +32,6 @@ namespace INFRA
                 }
             }
 
-     
             return tabla;
         }
 
@@ -56,7 +50,6 @@ namespace INFRA
 
                     conexion.Open();
 
-                 
                     filasAfectadas = comando.ExecuteNonQuery();
                 }
             }

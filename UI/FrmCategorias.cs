@@ -24,7 +24,6 @@ namespace UI
             InitializeComponent();
             servicio = new CategoriaService();
 
-            // Configuración visual
             dgvCategorias.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCategorias.MultiSelect = false;
             dgvCategorias.ReadOnly = true;
@@ -37,7 +36,7 @@ namespace UI
         {
             dgvCategorias.DataSource = null;
             dgvCategorias.DataSource = servicio.Listar();
-            // Ocultamos la lista de productos que trae EF por defecto
+            
             if (dgvCategorias.Columns["Productos"] != null)
                 dgvCategorias.Columns["Productos"].Visible = false;
         }
@@ -49,7 +48,6 @@ namespace UI
             idSeleccionado = 0;
         }
 
-        // --- AGREGAR ---
         private void btnAgregar_Click(object sender, EventArgs e)
         {
             try
@@ -68,7 +66,6 @@ namespace UI
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        // --- MODIFICAR ---
         private void btnModificar_Click(object sender, EventArgs e)
         {
             if (idSeleccionado == 0) return;
@@ -89,7 +86,6 @@ namespace UI
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        // --- BORRAR ---
         private void btnBorrar_Click(object sender, EventArgs e)
         {
             if (idSeleccionado == 0) return;
@@ -101,7 +97,6 @@ namespace UI
             }
         }
 
-        // --- SELECCIONAR FILA ---
         private void dgvCategorias_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvCategorias.SelectedRows.Count > 0)
